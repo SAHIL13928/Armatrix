@@ -1,8 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import type { TeamMember } from "@/lib/api";
 import TeamCard from "./TeamCard";
+import AddMemberModal from "./AddMemberModal";
 
 const container = {
   hidden: {},
@@ -17,18 +19,52 @@ const item = {
 };
 
 export default function TeamGrid({ members }: { members: TeamMember[] }) {
+  const [team, setTeam] = useState<TeamMember[]>([]);
+
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  useEffect(() => {
+    setTeam(members);
+  }, [members]);
+
+  const handleDelete = async (id: string) => {
+    await fetch(`${API}/team/${id}`, {
+      method: "DELETE",
+    });
+
+    setTeam((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const handleAdd = (newMember: TeamMember) => {
+    setTeam((prev) => [...prev, newMember]);
+  };
+
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="visible"
-      className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3"
-    >
-      {members.map((member, i) => (
-        <motion.div key={member.id} variants={item}>
-          <TeamCard member={member} index={i} />
+    <>
+      <AddMemberModal onAdd={handleAdd} />
+
+      {team.length === 0 ? (
+        <p className="text-center text-text-muted mt-10">
+          No team members yet. Add your first one 🚀
+        </p>
+      ) : (
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3"
+        >
+          {team.map((member, i) => (
+            <motion.div key={member.id} variants={item}>
+              <TeamCard
+                member={member}
+                index={i}
+                onDelete={handleDelete}
+              />
+            </motion.div>
+          ))}
         </motion.div>
-      ))}
-    </motion.div>
+      )}
+    </>
   );
 }

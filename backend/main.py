@@ -1,3 +1,5 @@
+import json
+import os
 import uuid
 from typing import Optional
 
@@ -6,6 +8,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
+# ✅ Ensure correct file path (important)
+DATA_FILE = os.path.join(os.path.dirname(__file__), "data.json")
+
+
+# --- Data Helpers ---
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return []
+
+    with open(DATA_FILE, "r") as f:
+        return json.load(f)
+
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+# --- App Setup ---
 app = FastAPI(title="Armatrix Team API")
 
 app.add_middleware(
@@ -19,8 +40,6 @@ app.add_middleware(
 
 
 # --- Models ---
-
-
 class TeamMemberBase(BaseModel):
     name: str = Field(min_length=1)
     role: str = Field(min_length=1)
@@ -49,80 +68,11 @@ class TeamMember(TeamMemberBase):
     id: str
 
 
-# --- Seed Data ---
-
-
-def avatar(name: str) -> str:
-    return f"https://ui-avatars.com/api/?name={name.replace(' ', '+')}&background=1a1a2e&color=e4e4e7&size=200&bold=true"
-
-
-team_members: list[dict] = [
-    {
-        "id": str(uuid.uuid4()),
-        "name": "Aarav Mehta",
-        "role": "Co-Founder & CEO",
-        "bio": "Former McKinsey consultant turned robotics obsessive. Dropped everything to build machines that think.",
-        "photo_url": avatar("Aarav Mehta"),
-        "linkedin_url": "",
-        "department": "Leadership",
-        "order": 1,
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "name": "Priya Sharma",
-        "role": "Co-Founder & CTO",
-        "bio": "PhD in robotic manipulation from IIT Bombay. 12 patents in actuator design. Writes firmware for fun.",
-        "photo_url": avatar("Priya Sharma"),
-        "linkedin_url": "",
-        "department": "Leadership",
-        "order": 2,
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "name": "Rohan Kapoor",
-        "role": "Head of Engineering",
-        "bio": "Ex-ISRO systems architect. Obsessed with reliability — if it can break in production, he's already tested it.",
-        "photo_url": avatar("Rohan Kapoor"),
-        "linkedin_url": "",
-        "department": "Engineering",
-        "order": 3,
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "name": "Ananya Reddy",
-        "role": "Senior Robotics Engineer",
-        "bio": "Builds the snake-arm prototypes. Thinks in CAD, dreams in G-code. Competitive rock climber.",
-        "photo_url": avatar("Ananya Reddy"),
-        "linkedin_url": "",
-        "department": "Engineering",
-        "order": 4,
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "name": "Vikram Das",
-        "role": "ML Engineer",
-        "bio": "Teaching robots to see and navigate autonomously. Previously built perception systems at a self-driving startup.",
-        "photo_url": avatar("Vikram Das"),
-        "linkedin_url": "",
-        "department": "Engineering",
-        "order": 5,
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "name": "Neha Iyer",
-        "role": "Product Designer",
-        "bio": "Designs interfaces for humans who operate robots. Believes great UX can make complex machinery feel intuitive.",
-        "photo_url": avatar("Neha Iyer"),
-        "linkedin_url": "",
-        "department": "Design",
-        "order": 6,
-    },
-]
+# --- Load Data ---
+team_members: list[dict] = load_data()
 
 
 # --- Endpoints ---
-
-
 @app.get("/health")
 def health():
     return {"status": "healthy"}
@@ -145,7 +95,10 @@ def get_member(member_id: str):
 def create_member(member: TeamMemberCreate):
     new = member.model_dump()
     new["id"] = str(uuid.uuid4())
+
     team_members.append(new)
+    save_data(team_members)  # ✅ persist
+
     return new
 
 
@@ -155,7 +108,10 @@ def update_member(member_id: str, updates: TeamMemberUpdate):
         if m["id"] == member_id:
             for key, val in updates.model_dump(exclude_none=True).items():
                 m[key] = val
+
+            save_data(team_members)  # ✅ persist
             return m
+
     raise HTTPException(status_code=404, detail="Member not found")
 
 
@@ -164,5 +120,7 @@ def delete_member(member_id: str):
     for i, m in enumerate(team_members):
         if m["id"] == member_id:
             team_members.pop(i)
+            save_data(team_members)  # ✅ persist
             return Response(status_code=204)
+
     raise HTTPException(status_code=404, detail="Member not found")
