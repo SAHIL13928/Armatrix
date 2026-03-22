@@ -31,9 +31,8 @@ app = FastAPI(title="Armatrix Team API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_origin_regex=r"https://armatrix[a-z0-9-]*\.vercel\.app",
-    allow_credentials=False,
+    allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

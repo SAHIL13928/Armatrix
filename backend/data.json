@@ -8,5 +8,15 @@
     "department": "",
     "order": 0,
     "id": "1a3c21aa-9019-4e87-aaf0-de4d0501f71b"
+  },
+  {
+    "name": "Test User",
+    "role": "Intern",
+    "bio": "Testing",
+    "photo_url": "",
+    "linkedin_url": "",
+    "department": "",
+    "order": 0,
+    "id": "6e8e8cdf-a9d5-4e9a-9ec3-5ebb57c69c92"
   }
 ]
