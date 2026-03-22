@@ -35,6 +35,19 @@ export default function TeamGrid({ members }: { members: TeamMember[] }) {
     setTeam((prev) => prev.filter((m) => m.id !== id));
   };
 
+  // ✅ NEW: edit handler
+  const handleEdit = async (updatedMember: TeamMember) => {
+    await fetch(`${API}/team/${updatedMember.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedMember),
+    });
+
+    setTeam((prev) =>
+      prev.map((m) => (m.id === updatedMember.id ? updatedMember : m))
+    );
+  };
+
   const handleAdd = (newMember: TeamMember) => {
     setTeam((prev) => [...prev, newMember]);
   };
@@ -60,6 +73,7 @@ export default function TeamGrid({ members }: { members: TeamMember[] }) {
                 member={member}
                 index={i}
                 onDelete={handleDelete}
+                onEdit={handleEdit} 
               />
             </motion.div>
           ))}

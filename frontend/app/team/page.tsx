@@ -1,8 +1,10 @@
 import { getTeamMembers, type TeamMember } from "@/lib/api";
 import TeamGrid from "@/components/TeamGrid";
+import TextPressure from "@/components/TextPressure"; 
 
 export default async function TeamPage() {
   let members: TeamMember[];
+
   try {
     members = await getTeamMembers();
   } catch {
@@ -12,9 +14,12 @@ export default async function TeamPage() {
   return (
     <div>
       <section className="px-6 py-16 text-center md:py-24">
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-          Meet the Team
-        </h1>
+        
+        {/* 🔥 Animated Heading */}
+       <div className="relative flex items-center justify-center h-[180px] md:h-[220px] max-w-4xl mx-auto">
+  <TextPressure text="Meet the Team" />
+</div>
+
         <p className="mx-auto mt-4 max-w-md text-lg text-text-muted md:text-xl">
           The people behind the machine
         </p>
