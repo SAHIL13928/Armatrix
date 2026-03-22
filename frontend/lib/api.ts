@@ -9,10 +9,15 @@ export interface TeamMember {
   order: number;
 }
 
-const API_URL = process.env.API_URL || "http://localhost:8000";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
-  const res = await fetch(`${API_URL}/team`, { next: { revalidate: 60 } });
+  const res = await fetch(`${API_URL}/team`, {
+    next: { revalidate: 60 },
+  });
+
   if (!res.ok) throw new Error("Failed to fetch team members");
+
   return res.json();
 }
